@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "813912710571",
+    "project_id": "permalikin-manager",
+    "storage_bucket": "permalikin-manager.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:813912710571:android:d99a78d150014f3619c6ee",
+        "android_client_info": {
+          "package_name": "com.permalindomanager"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "813912710571-fftb5gesulq6qj61bcs727vevv2a0g1h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.permalindomanager",
+            "certificate_hash": "bf3294b544cd3f613162938a619f051599f2fd2e"
+          }
+        },
+        {
+          "client_id": "813912710571-9t6cgiusm83q5p8v8rcgnvh2gnd5mgvf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0z38HXXn1ytsyT-3uhQQKCV7VmR8wW3o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "813912710571-9t6cgiusm83q5p8v8rcgnvh2gnd5mgvf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "813912710571-c44moou4h5u9irt0idf7b4hc6ojpki62.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.flumi.permalikinmanager"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
