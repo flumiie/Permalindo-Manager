@@ -53,6 +53,11 @@ export default () => {
     [],
   );
   const [_, setSearchMode] = useMMKVStorage('searchMode', asyncStorage, false);
+  const [refreshList, setRefreshList] = useMMKVStorage<boolean | null>(
+    'refreshList',
+    asyncStorage,
+    null,
+  );
 
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -140,8 +145,14 @@ export default () => {
     if (credentials?.token) {
       fetchData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [credentials?.token]);
+
+  useEffect(() => {
+    if (refreshList) {
+      fetchData();
+      asyncStorage.removeItem('refreshList');
+    }
+  }, [refreshList]);
 
   return (
     <>
@@ -184,6 +195,7 @@ export default () => {
                 .get()
                 .then(querySnap => {
                   querySnap.forEach(doc => doc.ref.delete());
+                  setRefreshList(true);
                 });
               setShowDeleteDropdown(false);
             },
@@ -194,7 +206,6 @@ export default () => {
           setShowDropdown({ ...showDropdown, open: true });
         }}
       />
-
       <FlatList
         data={filteredData}
         refreshControl={

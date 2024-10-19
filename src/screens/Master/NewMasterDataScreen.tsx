@@ -33,7 +33,12 @@ export default () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
-  const [_, setSnackbar] = useMMKVStorage<{
+  const [_, setRefreshList] = useMMKVStorage<boolean | null>(
+    'refreshList',
+    asyncStorage,
+    null,
+  );
+  const [__, setSnackbar] = useMMKVStorage<{
     show: boolean;
     type: 'success' | 'error';
     message: string;
@@ -203,6 +208,7 @@ export default () => {
                       .collection('Personels')
                       .add(values)
                       .then(() => {
+                        setRefreshList(true);
                         navigation.goBack();
                         setSnackbar({
                           show: true,
@@ -368,7 +374,9 @@ export default () => {
                     onChangeText={handleChange('memberCode')}
                     onBlur={handleBlur('memberCode')}
                     onSubmitEditing={() => {
-                      if (!values.birthPlaceDate) {
+                      if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
                         birthPlaceDateInputRef.current?.focus();
                       } else if (!values.religion) {
                         religionInputRef.current?.focus();
@@ -382,12 +390,12 @@ export default () => {
                         identityCardAddressInputRef.current?.focus();
                       } else if (!values.address?.currentAddress) {
                         currentAddressInputRef.current?.focus();
-                      } else if (!values.address?.country) {
-                        countryInputRef.current?.focus();
-                      } else if (!values.address?.province) {
-                        provinceInputRef.current?.focus();
                       } else if (!values.address?.city) {
                         cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
                       } else if (!values.address?.zipCode) {
                         zipCodeInputRef.current?.focus();
                       } else if (!values.balance?.initial) {
@@ -408,7 +416,9 @@ export default () => {
                     onChangeText={handleChange('fullName')}
                     onBlur={handleBlur('fullName')}
                     onSubmitEditing={() => {
-                      if (!values.birthPlaceDate) {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
                         birthPlaceDateInputRef.current?.focus();
                       } else if (!values.religion) {
                         religionInputRef.current?.focus();
@@ -422,12 +432,12 @@ export default () => {
                         identityCardAddressInputRef.current?.focus();
                       } else if (!values.address?.currentAddress) {
                         currentAddressInputRef.current?.focus();
-                      } else if (!values.address?.country) {
-                        countryInputRef.current?.focus();
-                      } else if (!values.address?.province) {
-                        provinceInputRef.current?.focus();
                       } else if (!values.address?.city) {
                         cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
                       } else if (!values.address?.zipCode) {
                         zipCodeInputRef.current?.focus();
                       } else if (!values.balance?.initial) {
@@ -451,7 +461,9 @@ export default () => {
                     onChangeText={handleChange('birthPlaceDate')}
                     onBlur={handleBlur('birthPlaceDate')}
                     onSubmitEditing={() => {
-                      if (!values.fullName) {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
                         fullNameInputRef.current?.focus();
                       } else if (!values.religion) {
                         religionInputRef.current?.focus();
@@ -465,12 +477,12 @@ export default () => {
                         identityCardAddressInputRef.current?.focus();
                       } else if (!values.address?.currentAddress) {
                         currentAddressInputRef.current?.focus();
-                      } else if (!values.address?.country) {
-                        countryInputRef.current?.focus();
-                      } else if (!values.address?.province) {
-                        provinceInputRef.current?.focus();
                       } else if (!values.address?.city) {
                         cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
                       } else if (!values.address?.zipCode) {
                         zipCodeInputRef.current?.focus();
                       } else if (!values.balance?.initial) {
@@ -494,7 +506,9 @@ export default () => {
                     onChangeText={handleChange('religion')}
                     onBlur={handleBlur('religion')}
                     onSubmitEditing={() => {
-                      if (!values.fullName) {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
                         fullNameInputRef.current?.focus();
                       } else if (!values.birthPlaceDate) {
                         birthPlaceDateInputRef.current?.focus();
@@ -508,12 +522,12 @@ export default () => {
                         identityCardAddressInputRef.current?.focus();
                       } else if (!values.address?.currentAddress) {
                         currentAddressInputRef.current?.focus();
-                      } else if (!values.address?.country) {
-                        countryInputRef.current?.focus();
-                      } else if (!values.address?.province) {
-                        provinceInputRef.current?.focus();
                       } else if (!values.address?.city) {
                         cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
                       } else if (!values.address?.zipCode) {
                         zipCodeInputRef.current?.focus();
                       } else if (!values.balance?.initial) {
@@ -536,6 +550,37 @@ export default () => {
                     onChangeText={handleChange('email')}
                     onBlur={handleBlur('email')}
                     value={values.email}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                   <Spacer height={16} />
                   <TextInput
@@ -549,6 +594,37 @@ export default () => {
                     value={`${values.status
                       .charAt(0)
                       .toUpperCase()}${values.status.substring(1)}`}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                   <Spacer height={16} />
                   <TextInput
@@ -562,6 +638,37 @@ export default () => {
                     onBlur={handleBlur('phoneNo')}
                     value={values.phoneNo}
                     error={touched.phoneNo && errors.phoneNo}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                   <Spacer height={16} />
                   <TextInput
@@ -581,6 +688,37 @@ export default () => {
                       touched.address?.identityCardAddress &&
                       errors.address?.identityCardAddress
                     }
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                 </DismissableView>
 
@@ -610,6 +748,37 @@ export default () => {
                       touched.address?.currentAddress &&
                       errors.address?.currentAddress
                     }
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                   <Spacer height={16} />
                   <TextInput
@@ -632,6 +801,37 @@ export default () => {
                     //   cityInputRef.current?.focus();
                     //   setShowCitiesDropdown(true);
                     // }}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                   <Spacer height={16} />
                   <TextInput
@@ -662,6 +862,37 @@ export default () => {
                     //     setShowProvinceDropdown(true);
                     //   }
                     // }}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                   <Spacer height={16} />
                   <TextInput
@@ -682,6 +913,37 @@ export default () => {
                       .charAt(0)
                       .toUpperCase()}${values.address?.country.substring(1)}`}
                     error={touched.address?.country && errors.address?.country}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                   <Spacer height={16} />
                   <TextInput
@@ -703,6 +965,37 @@ export default () => {
                     //   zipCodeInputRef.current?.focus();
                     //   setShowZipCodeDropdown(true);
                     // }}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                 </DismissableView>
 
@@ -733,6 +1026,37 @@ export default () => {
                         : ''
                     }
                     error={touched.balance?.initial && errors.balance?.initial}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                   <Spacer height={16} />
                   <TextInput
@@ -753,6 +1077,37 @@ export default () => {
                         : ''
                     }
                     error={touched.balance?.end && errors.balance?.end}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      }
+                    }}
                   />
                 </DismissableView>
               </SafeAreaView>

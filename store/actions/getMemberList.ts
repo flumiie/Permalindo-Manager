@@ -20,9 +20,9 @@ export default (props: GetUserDataProps) => {
             type: GET_MEMBER_LIST,
             payload: data,
           });
-          if (data.length) {
-            props.onSuccess(data);
-          }
+          props.onSuccess(data);
+        } else {
+          props.onSuccess([]);
         }
       })
       .catch(err => {
