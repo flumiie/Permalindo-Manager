@@ -39,7 +39,7 @@ export default (props: ItemListProps) => {
                 ...styles.imageContainer,
               }}>
               <FastImage
-                defaultSource={require('../../../assets/images/gears.jpeg')}
+                defaultSource={require('../../../assets/images/gears.jpg')}
                 source={props.leftImage}
                 resizeMode={FastImage.resizeMode.cover}
                 style={styles.largeImage}
