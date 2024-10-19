@@ -1,7 +1,7 @@
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { getVersion } from 'react-native-device-info';
 import { useMMKVStorage } from 'react-native-mmkv-storage';
@@ -25,8 +25,23 @@ export default () => {
     type: 'success' | 'error';
     message: string;
   } | null>('snackbar', asyncStorage, null);
+  const [__, setUseStatusBar] = useMMKVStorage<{
+    home: boolean;
+    members: boolean;
+    account: boolean;
+  } | null>('useStatusBar', asyncStorage, null);
   const [showConfirmLogoutDropdown, setShowConfirmLogoutDropdown] =
     useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      setUseStatusBar({
+        home: false,
+        members: true,
+        account: false,
+      });
+    }, []),
+  );
 
   return (
     <>

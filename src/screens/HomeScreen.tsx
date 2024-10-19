@@ -1,13 +1,12 @@
 import { Marquee } from '@animatereactnative/marquee';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import dayjs from 'dayjs';
 import 'dayjs/locale/id';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   FlatList,
   ImageSourcePropType,
-  StatusBar,
   StyleSheet,
   View,
   ViewProps,
@@ -147,6 +146,11 @@ export default () => {
     type: 'success' | 'error';
     message: string;
   } | null>('snackbar', asyncStorage, null);
+  const [__, setUseStatusBar] = useMMKVStorage<{
+    home: boolean;
+    members: boolean;
+    account: boolean;
+  } | null>('useStatusBar', asyncStorage, null);
   const [credentials] = useMMKVStorage<{
     token: string;
     name: string;
@@ -159,7 +163,11 @@ export default () => {
     asyncStorage,
     false,
   );
-  const [__, setSearchMode] = useMMKVStorage('searchMode', asyncStorage, false);
+  const [___, setSearchMode] = useMMKVStorage(
+    'searchMode',
+    asyncStorage,
+    false,
+  );
 
   const [news, setNews] = useState<[]>([]);
 
@@ -189,9 +197,18 @@ export default () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      setUseStatusBar({
+        home: true,
+        members: false,
+        account: false,
+      });
+    }, []),
+  );
+
   return (
     <>
-      <StatusBar barStyle="light-content" backgroundColor="#BF2229" />
       <View
         // eslint-disable-next-line react-native/no-inline-styles
         style={{

@@ -1,7 +1,7 @@
 import firestore from '@react-native-firebase/firestore';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList } from 'react-native';
 import { RefreshControl } from 'react-native';
 import { useMMKVStorage } from 'react-native-mmkv-storage';
@@ -53,6 +53,11 @@ export default () => {
     [],
   );
   const [_, setSearchMode] = useMMKVStorage('searchMode', asyncStorage, false);
+  const [__, setUseStatusBar] = useMMKVStorage<{
+    home: boolean;
+    members: boolean;
+    account: boolean;
+  } | null>('useStatusBar', asyncStorage, null);
   const [refreshList, setRefreshList] = useMMKVStorage<boolean | null>(
     'refreshList',
     asyncStorage,
@@ -153,6 +158,16 @@ export default () => {
       asyncStorage.removeItem('refreshList');
     }
   }, [refreshList]);
+
+  useFocusEffect(
+    useCallback(() => {
+      setUseStatusBar({
+        home: false,
+        members: true,
+        account: false,
+      });
+    }, []),
+  );
 
   return (
     <>

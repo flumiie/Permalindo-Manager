@@ -1,7 +1,7 @@
 import { useNetInfo } from '@react-native-community/netinfo';
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
-import React, { useEffect } from 'react';
-import { StatusBar, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StatusBar, StatusBarStyle, StyleSheet } from 'react-native';
 import RNBootSplash from 'react-native-bootsplash';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useMMKVStorage } from 'react-native-mmkv-storage';
@@ -33,6 +33,23 @@ function App(): React.JSX.Element {
     type: 'success' | 'error';
     message: string;
   } | null>('snackbar', asyncStorage, null);
+  const [useStatusBar] = useMMKVStorage<{
+    home: boolean;
+    members: boolean;
+    account: boolean;
+  } | null>('useStatusBar', asyncStorage, null);
+  const [offsets] = useMMKVStorage<{
+    headerHeight: number;
+    beyond: boolean;
+  } | null>('offsets', asyncStorage, null);
+
+  const [statusBar, setStatusBar] = useState<{
+    backgroundColor: string;
+    barStyle: StatusBarStyle;
+  }>({
+    backgroundColor: '#FCFCFF',
+    barStyle: 'dark-content',
+  });
 
   useEffect(() => {
     setTimeout(() => {
@@ -56,17 +73,27 @@ function App(): React.JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [networkConnected]);
 
+  useEffect(() => {
+    if (useStatusBar?.home) {
+      setStatusBar({
+        backgroundColor: offsets?.beyond ? '#FFF' : '#BF2229',
+        barStyle: offsets?.beyond ? 'dark-content' : 'light-content',
+      });
+    }
+    if (useStatusBar?.members || useStatusBar?.account) {
+      setStatusBar({
+        backgroundColor: '#FCFCFF',
+        barStyle: 'dark-content',
+      });
+    }
+  }, [useStatusBar, offsets]);
+
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle="dark-content" backgroundColor="#FCFCFF" />
-      {snackbar ? (
-        <Snackbar
-          visible={snackbar.show}
-          onHide={() => setSnackbar(null)}
-          type={snackbar.type}
-          message={snackbar.message}
-        />
-      ) : null}
+      <StatusBar
+        backgroundColor={statusBar.backgroundColor}
+        barStyle={statusBar.barStyle}
+      />
       <NavigationContainer theme={Theme}>
         <Provider store={store}>
           <GestureHandlerRootView style={styles.flex}>
