@@ -60,9 +60,11 @@ export default (props: ItemListProps) => {
               }}>
               <View style={styles.contents}>
                 <MediumText color="#000">{props.title}</MediumText>
-                <RegularText color="#666" size={11}>
-                  {dayjs(props.date ?? '').format('HH:mm  |  D MMM YYYY')}
-                </RegularText>
+                {props.date ? (
+                  <RegularText color="#666" size={11}>
+                    {dayjs(props.date ?? '').format('HH:mm  |  D MMM YYYY')}
+                  </RegularText>
+                ) : null}
               </View>
               {(props.sub as SubtitleType) ? (
                 <>
