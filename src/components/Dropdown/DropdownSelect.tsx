@@ -16,7 +16,6 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Feather';
 
-import RadioButton from '../RadioButton';
 import Spacer from '../Spacer';
 import BoldText from '../Text/BoldText';
 import MediumText from '../Text/MediumText';
@@ -94,11 +93,11 @@ export default (props: DropdownProps) => {
                       setTimeout(() => props.onClose(), 100);
                     }}>
                     <MediumText>{option}</MediumText>
-                    <RadioButton
+                    {/* <RadioButton
                       selected={
                         option.toLowerCase() === props.selected?.toLowerCase()
                       }
-                    />
+                    /> */}
                   </Pressable>
                 );
               }

@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import React from 'react';
 import { Pressable, PressableProps, StyleSheet, View } from 'react-native';
 import FastImage, { Source } from 'react-native-fast-image';
@@ -11,13 +12,14 @@ import RegularText from '../Text/RegularText';
 type SubtitleType = {
   subtitle: string;
   desc: string;
-  balance: number;
+  extra?: number;
 };
 
 interface ItemListProps extends PressableProps {
   id: string;
-  leftImage: number | Source;
   title: string;
+  date?: string;
+  leftImage?: number | Source;
   sub?: SubtitleType | BadgeProps;
   onPress: () => void;
 }
@@ -31,27 +33,37 @@ export default (props: ItemListProps) => {
         onPress={props.onPress}>
         <View style={styles.contents}>
           <View style={styles.listLeftContents}>
+            {props.leftImage ? (
+              <>
+                <View
+                  // eslint-disable-next-line react-native/no-inline-styles
+                  style={{
+                    width: 56,
+                    height: 56,
+                    ...styles.imageContainer,
+                  }}>
+                  <FastImage
+                    defaultSource={require('../../../assets/images/gears.jpg')}
+                    source={props.leftImage}
+                    resizeMode={FastImage.resizeMode.cover}
+                    style={styles.largeImage}
+                  />
+                </View>
+                <Spacer width={12} />
+              </>
+            ) : null}
             <View
               // eslint-disable-next-line react-native/no-inline-styles
               style={{
-                width: 56,
-                height: 56,
-                ...styles.imageContainer,
-              }}>
-              <FastImage
-                defaultSource={require('../../../assets/images/gears.jpg')}
-                source={props.leftImage}
-                resizeMode={FastImage.resizeMode.cover}
-                style={styles.largeImage}
-              />
-            </View>
-            <Spacer width={12} />
-            <View
-              // eslint-disable-next-line react-native/no-inline-styles
-              style={{
+                flex: 1,
                 alignSelf: props.sub ? 'flex-start' : 'center',
               }}>
-              <MediumText color="#000">{props.title}</MediumText>
+              <View style={styles.contents}>
+                <MediumText color="#000">{props.title}</MediumText>
+                <RegularText color="#666" size={11}>
+                  {dayjs(props.date ?? '').format('HH:mm  |  D MMM YYYY')}
+                </RegularText>
+              </View>
               {(props.sub as SubtitleType) ? (
                 <>
                   <RegularText size={12} color="#4B4B4B">
@@ -75,6 +87,7 @@ export default (props: ItemListProps) => {
               ) : null}
             </View>
           </View>
+          <Spacer width={16} />
           <Icon name="chevron-right" size={24} color="#44474E" />
         </View>
       </Pressable>
@@ -108,6 +121,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   listLeftContents: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },

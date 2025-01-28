@@ -8,6 +8,7 @@ import DropdownConfirm from './Dropdown/DropdownConfirm';
 import DropdownNavigator from './Dropdown/DropdownNavigator';
 import DropdownSelect from './Dropdown/DropdownSelect';
 import Empty from './Empty';
+import FloatingActionButton from './FloatingActionButton';
 import Form from './Form';
 import DateInput from './Input/DateInput';
 import TextInput from './Input/TextInput';
@@ -37,6 +38,7 @@ export {
   DismissableView,
   Dot,
   Empty,
+  FloatingActionButton,
   Form,
   Loading,
   Modal,

@@ -98,7 +98,7 @@ export default forwardRef(
             ref={ref}
             editable={!props.disabled || props.editable}
             placeholder={`${props.leftIcon ? '         ' : ''}${
-              props.placeholder
+              props.placeholder ?? ''
             }`}
             placeholderTextColor={props.disabled ? '#BBB' : '#8E8E8E'}
             returnKeyType="next"
