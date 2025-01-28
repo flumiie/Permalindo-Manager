@@ -1,6 +1,5 @@
 import firestore from '@react-native-firebase/firestore';
-import { RouteProp } from '@react-navigation/core';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Formik } from 'formik';
 import React, { useEffect, useRef, useState } from 'react';
@@ -13,7 +12,6 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { RefreshControl } from 'react-native';
 import { useMMKVStorage } from 'react-native-mmkv-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Yup from 'yup';
@@ -40,16 +38,17 @@ export default () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'EditMasterData'>>();
 
-  const [_, setSnackbar] = useMMKVStorage<{
+  const [_, setRefreshList] = useMMKVStorage<boolean | null>(
+    'refreshList',
+    asyncStorage,
+    null,
+  );
+  const [__, setSnackbar] = useMMKVStorage<{
     show: boolean;
     type: 'success' | 'error';
     message: string;
   } | null>('snackbar', asyncStorage, null);
-  const [__, setPersonels] = useMMKVStorage<MasterDataType[]>(
-    'personels',
-    asyncStorage,
-    [],
-  );
+  const [memberData, setMemberData] = useState<MasterDataType | null>(null);
 
   // const avatarInputRef = useRef<RNTextInput>(null);
   const memberCodeInputRef = useRef<RNTextInput>(null);
@@ -68,29 +67,11 @@ export default () => {
   const balanceInitialInputRef = useRef<RNTextInput>(null);
   const balanceEndInputRef = useRef<RNTextInput>(null);
 
-  const [loading, setLoading] = useState(false);
   const [showConfirmCreateDataDropdown, setShowConfirmCreateDataDropdown] =
-    useState(false);
-  // const [showCountriesDropdown, setShowCountriesDropdown] = useState(false);
-  // const [showProvinceDropdown, setShowProvinceDropdown] = useState(false);
-  // const [showCitiesDropdown, setShowCitiesDropdown] = useState(false);
-  // const [showZipCodeDropdown, setShowZipCodeDropdown] = useState(false);
-  // const [selectedCountry, setSelectedCountry] = useState<CountryType>({
-  //   name: '',
-  //   code: '',
-  //   continent: '',
-  // });
-  // const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
-  // const [selectedCity, setSelectedCity] = useState<CityType>({
-  //   name: '',
-  //   country: '',
-  //   admin1: '',
-  //   admin2: '',
-  //   lat: '',
-  //   lng: '',
-  // });
-  // const [selectedZipCode, setSelectedZipCode] = useState<string | null>(null);
-  const [memberData, setMemberData] = useState<MasterDataType | null>(null);
+    useState({
+      state: false,
+      values: {},
+    });
 
   const ValidationSchema = Yup.object().shape({
     // avatar: Yup.string().required('Harus diisi'),
@@ -116,13 +97,11 @@ export default () => {
   });
 
   const fetchData = () => {
-    setLoading(true);
     dispatch(
       getMemberData({
         memberCode: route.params?.memberCode ?? '',
         onSuccess: v => {
           setMemberData(v);
-          setLoading(false);
         },
         onError: () => {
           setSnackbar({
@@ -130,7 +109,6 @@ export default () => {
             type: 'error',
             message: 'Ada kesalahan. Mohon coba lagi nanti',
           });
-          setLoading(false);
         },
       }),
     );
@@ -171,8 +149,25 @@ export default () => {
         validateOnBlur
         validateOnChange
         validationSchema={ValidationSchema}
-        onSubmit={() => {
-          setShowConfirmCreateDataDropdown(true);
+        onSubmit={values => {
+          setShowConfirmCreateDataDropdown({
+            state: true,
+            values,
+          });
+          // navigation.navigate(
+          //   route.name.includes('Clearance')
+          //     ? 'AddClearanceData'
+          //     : 'AddVibrationData',
+          //   {
+          //     areaCode: values.areaCode,
+          //     category: values.category,
+          //     dateCreated: values.dateCreated,
+          //     timeCreated: values.timeCreated,
+          //     type: values.type,
+          //     unit: values.unit,
+          //     area: values.area,
+          //   },
+          // );
         }}>
         {({
           values,
@@ -185,17 +180,20 @@ export default () => {
           <>
             <StatusBar backgroundColor="#FFF" />
             <DropdownConfirm
-              open={showConfirmCreateDataDropdown}
-              title={`Konfirmasi ubah master data ${route.params?.memberCode}`}
+              open={showConfirmCreateDataDropdown.state}
+              title="Konfirmasi"
               onClose={() => {
-                setShowConfirmCreateDataDropdown(false);
+                setShowConfirmCreateDataDropdown({
+                  state: false,
+                  values: {},
+                });
               }}
               content={
                 <>
                   <Spacer height={8} />
                   <RegularText type="body-medium">
-                    Yakin data sudah benar? Data akan disimpan setelah menekan
-                    OK
+                    Yakin data sudah benar? Data akan ditambahkan setelah
+                    menekan OK
                   </RegularText>
                 </>
               }
@@ -203,108 +201,88 @@ export default () => {
                 left: {
                   label: 'Batal',
                   onPress: () => {
-                    setShowConfirmCreateDataDropdown(false);
+                    setShowConfirmCreateDataDropdown({
+                      state: false,
+                      values: {},
+                    });
                   },
                 },
                 right: {
                   label: 'OK',
                   onPress: () => {
+                    setShowConfirmCreateDataDropdown({
+                      state: false,
+                      values: {},
+                    });
                     firestore()
                       .collection('Personels')
-                      .where('memberCode', '==', route.params?.memberCode ?? '')
-                      .get()
-                      .then(querySnap => {
-                        if (querySnap.docs.length) {
-                          firestore()
-                            .collection('Personels')
-                            .doc(querySnap.docs[0].id)
-                            .update(values)
-                            .then(() => {
-                              setPersonels(prev => {
-                                let temp = prev;
-
-                                temp = temp.map(S => {
-                                  if (
-                                    S.memberCode === route.params?.memberCode
-                                  ) {
-                                    return values;
-                                  }
-                                  return S;
-                                });
-
-                                return temp;
-                              });
-                              setSnackbar({
-                                show: true,
-                                type: 'success',
-                                message: 'Data sudah tersimpan',
-                              });
-                              setShowConfirmCreateDataDropdown(false);
-                              navigation.goBack();
-                            });
-                        }
+                      .add(values)
+                      .then(() => {
+                        setRefreshList(true);
+                        navigation.goBack();
+                        setSnackbar({
+                          show: true,
+                          type: 'success',
+                          message: 'Data sudah tersimpan',
+                        });
                       });
                   },
                 },
               }}
             />
-            <ScrollView
-              style={styles.container}
-              refreshControl={
-                <RefreshControl refreshing={loading} onRefresh={fetchData} />
-              }>
+            <ScrollView style={styles.container}>
               <SafeAreaView>
                 <DismissableView style={styles.contentContainer}>
                   <BoldText type="title-medium">Buat master data baru</BoldText>
                   <Spacer height={4} />
-                  <RegularText type="body-medium" color="#4B4B4B">
+                  <RegularText type="body-small" color="#4B4B4B">
                     Silakan masukan data terlebih dahulu untuk melanjutkan
                   </RegularText>
                   <Spacer height={8} />
-                  <RegularText type="body-medium" color="#AAA">
+                  <RegularText type="body-small" color="#AAA">
                     * Harus diisi
                   </RegularText>
                   <Spacer height={24} />
                   {/* <RegularText type="body-medium" color="#4B4B4B">
-                Foto
-              </RegularText>
-              <Spacer height={4} />
-              <Pressable
-                style={styles.avatarContainer}
-                onPress={() => {
-                  ImagePicker?.openPicker({
-                    mediaType: 'photo',
-                    compressImageQuality: 0.9,
-                    cropping: true,
-                    forceJpg: true,
-                    cropperCircleOverlay: true,
-                  }).then(photo => {
-                    setFieldValue('avatar', photo.path);
-                  });
-                }}>
-                <FastImage
-                  defaultSource={require('../../../assets/images/avatar.png')}
-                  source={{ uri: values.avatar }}
-                  resizeMode={FastImage.resizeMode.cover}
-                  style={styles.avatar}
-                />
-                <Pressable
-                  style={styles.cameraIconContainer}
-                  onPress={() => {
-                    ImagePicker?.openPicker({
-                      mediaType: 'photo',
-                      compressImageQuality: 0.9,
-                      cropping: true,
-                      forceJpg: true,
-                      cropperCircleOverlay: true,
-                    }).then(photo => {
-                      setFieldValue('avatar', photo.path);
-                    });
-                  }}>
-                  <Icon name="camera" size={12} style={styles.cameraIcon} />
-                </Pressable>
-              </Pressable>
-              <Spacer height={16} /> */}
+                    Foto
+                  </RegularText>
+                  <Spacer height={4} />
+                  <Pressable
+                    style={styles.avatarContainer}
+                    onPress={() => {
+                      ImagePicker?.openPicker({
+                        mediaType: 'photo',
+                        compressImageQuality: 0.9,
+                        cropping: true,
+                        forceJpg: true,
+                        cropperCircleOverlay: true,
+                      }).then(photo => {
+                        setFieldValue('avatar', photo.path);
+                      });
+                    }}>
+                    <FastImage
+                      defaultSource={require('../../../assets/images/avatar.png')}
+                      source={{ uri: values.avatar }}
+                      resizeMode={FastImage.resizeMode.cover}
+                      style={styles.avatar}
+                    />
+                    <Pressable
+                      style={styles.cameraIconContainer}
+                      onPress={() => {
+                        ImagePicker?.openPicker({
+                          mediaType: 'photo',
+                          compressImageQuality: 0.9,
+                          cropping: true,
+                          forceJpg: true,
+                          cropperCircleOverlay: true,
+                        }).then(photo => {
+                          setFieldValue('avatar', photo.path);
+                        });
+                      }}>
+                      <Icon name="camera" size={12} style={styles.cameraIcon} />
+                    </Pressable>
+                  </Pressable>
+                  <Spacer height={16} /> */}
                   <TextInput
                     ref={memberCodeInputRef}
                     id="member-code"
@@ -314,7 +292,9 @@ export default () => {
                     onChangeText={handleChange('memberCode')}
                     onBlur={handleBlur('memberCode')}
                     onSubmitEditing={() => {
-                      if (!values.birthPlaceDate) {
+                      if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
                         birthPlaceDateInputRef.current?.focus();
                       } else if (!values.religion) {
                         religionInputRef.current?.focus();
@@ -328,12 +308,12 @@ export default () => {
                         identityCardAddressInputRef.current?.focus();
                       } else if (!values.address?.currentAddress) {
                         currentAddressInputRef.current?.focus();
-                      } else if (!values.address?.country) {
-                        countryInputRef.current?.focus();
-                      } else if (!values.address?.province) {
-                        provinceInputRef.current?.focus();
                       } else if (!values.address?.city) {
                         cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
                       } else if (!values.address?.zipCode) {
                         zipCodeInputRef.current?.focus();
                       } else if (!values.balance?.initial) {
@@ -345,6 +325,7 @@ export default () => {
                     value={values.memberCode.toUpperCase()}
                     error={touched.memberCode && errors.memberCode}
                   />
+                  <Spacer height={16} />
                   <TextInput
                     ref={fullNameInputRef}
                     id="full-name"
@@ -354,7 +335,9 @@ export default () => {
                     onChangeText={handleChange('fullName')}
                     onBlur={handleBlur('fullName')}
                     onSubmitEditing={() => {
-                      if (!values.birthPlaceDate) {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
                         birthPlaceDateInputRef.current?.focus();
                       } else if (!values.religion) {
                         religionInputRef.current?.focus();
@@ -368,12 +351,12 @@ export default () => {
                         identityCardAddressInputRef.current?.focus();
                       } else if (!values.address?.currentAddress) {
                         currentAddressInputRef.current?.focus();
-                      } else if (!values.address?.country) {
-                        countryInputRef.current?.focus();
-                      } else if (!values.address?.province) {
-                        provinceInputRef.current?.focus();
                       } else if (!values.address?.city) {
                         cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
                       } else if (!values.address?.zipCode) {
                         zipCodeInputRef.current?.focus();
                       } else if (!values.balance?.initial) {
@@ -397,7 +380,9 @@ export default () => {
                     onChangeText={handleChange('birthPlaceDate')}
                     onBlur={handleBlur('birthPlaceDate')}
                     onSubmitEditing={() => {
-                      if (!values.fullName) {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
                         fullNameInputRef.current?.focus();
                       } else if (!values.religion) {
                         religionInputRef.current?.focus();
@@ -411,12 +396,12 @@ export default () => {
                         identityCardAddressInputRef.current?.focus();
                       } else if (!values.address?.currentAddress) {
                         currentAddressInputRef.current?.focus();
-                      } else if (!values.address?.country) {
-                        countryInputRef.current?.focus();
-                      } else if (!values.address?.province) {
-                        provinceInputRef.current?.focus();
                       } else if (!values.address?.city) {
                         cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
                       } else if (!values.address?.zipCode) {
                         zipCodeInputRef.current?.focus();
                       } else if (!values.balance?.initial) {
@@ -440,7 +425,9 @@ export default () => {
                     onChangeText={handleChange('religion')}
                     onBlur={handleBlur('religion')}
                     onSubmitEditing={() => {
-                      if (!values.fullName) {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
                         fullNameInputRef.current?.focus();
                       } else if (!values.birthPlaceDate) {
                         birthPlaceDateInputRef.current?.focus();
@@ -454,12 +441,12 @@ export default () => {
                         identityCardAddressInputRef.current?.focus();
                       } else if (!values.address?.currentAddress) {
                         currentAddressInputRef.current?.focus();
-                      } else if (!values.address?.country) {
-                        countryInputRef.current?.focus();
-                      } else if (!values.address?.province) {
-                        provinceInputRef.current?.focus();
                       } else if (!values.address?.city) {
                         cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
                       } else if (!values.address?.zipCode) {
                         zipCodeInputRef.current?.focus();
                       } else if (!values.balance?.initial) {
@@ -482,6 +469,37 @@ export default () => {
                     onChangeText={handleChange('email')}
                     onBlur={handleBlur('email')}
                     value={values.email}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                   <Spacer height={16} />
                   <TextInput
@@ -495,6 +513,37 @@ export default () => {
                     value={`${values.status
                       .charAt(0)
                       .toUpperCase()}${values.status.substring(1)}`}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                   <Spacer height={16} />
                   <TextInput
@@ -508,6 +557,37 @@ export default () => {
                     onBlur={handleBlur('phoneNo')}
                     value={values.phoneNo}
                     error={touched.phoneNo && errors.phoneNo}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                   <Spacer height={16} />
                   <TextInput
@@ -527,6 +607,37 @@ export default () => {
                       touched.address?.identityCardAddress &&
                       errors.address?.identityCardAddress
                     }
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                 </DismissableView>
 
@@ -556,6 +667,37 @@ export default () => {
                       touched.address?.currentAddress &&
                       errors.address?.currentAddress
                     }
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                   <Spacer height={16} />
                   <TextInput
@@ -578,6 +720,37 @@ export default () => {
                     //   cityInputRef.current?.focus();
                     //   setShowCitiesDropdown(true);
                     // }}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                   <Spacer height={16} />
                   <TextInput
@@ -608,6 +781,37 @@ export default () => {
                     //     setShowProvinceDropdown(true);
                     //   }
                     // }}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                   <Spacer height={16} />
                   <TextInput
@@ -628,6 +832,37 @@ export default () => {
                       .charAt(0)
                       .toUpperCase()}${values.address?.country.substring(1)}`}
                     error={touched.address?.country && errors.address?.country}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                   <Spacer height={16} />
                   <TextInput
@@ -649,6 +884,37 @@ export default () => {
                     //   zipCodeInputRef.current?.focus();
                     //   setShowZipCodeDropdown(true);
                     // }}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                 </DismissableView>
 
@@ -679,6 +945,37 @@ export default () => {
                         : ''
                     }
                     error={touched.balance?.initial && errors.balance?.initial}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.end) {
+                        balanceEndInputRef.current?.focus();
+                      }
+                    }}
                   />
                   <Spacer height={16} />
                   <TextInput
@@ -699,6 +996,37 @@ export default () => {
                         : ''
                     }
                     error={touched.balance?.end && errors.balance?.end}
+                    onSubmitEditing={() => {
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.fullName) {
+                        fullNameInputRef.current?.focus();
+                      } else if (!values.birthPlaceDate) {
+                        birthPlaceDateInputRef.current?.focus();
+                      } else if (!values.religion) {
+                        religionInputRef.current?.focus();
+                      } else if (!values.email) {
+                        emailInputRef.current?.focus();
+                      } else if (!values.status) {
+                        statusInputRef.current?.focus();
+                      } else if (!values.phoneNo) {
+                        phoneNoInputRef.current?.focus();
+                      } else if (!values.address?.identityCardAddress) {
+                        identityCardAddressInputRef.current?.focus();
+                      } else if (!values.address?.currentAddress) {
+                        currentAddressInputRef.current?.focus();
+                      } else if (!values.address?.city) {
+                        cityInputRef.current?.focus();
+                      } else if (!values.address?.province) {
+                        provinceInputRef.current?.focus();
+                      } else if (!values.address?.country) {
+                        countryInputRef.current?.focus();
+                      } else if (!values.address?.zipCode) {
+                        zipCodeInputRef.current?.focus();
+                      } else if (!values.balance?.initial) {
+                        balanceInitialInputRef.current?.focus();
+                      }
+                    }}
                   />
                 </DismissableView>
               </SafeAreaView>
@@ -708,36 +1036,7 @@ export default () => {
                 ...styles.buttonContainer,
                 paddingBottom: insets.bottom + 16,
               }}>
-              <Button
-                type="primary"
-                disabled={
-                  loading ||
-                  // !values.avatar ||
-                  // !!errors.avatar ||
-                  !values.fullName ||
-                  !!errors.fullName ||
-                  !values.birthPlaceDate ||
-                  !!errors.birthPlaceDate ||
-                  !values.phoneNo ||
-                  !!errors.phoneNo ||
-                  !values.address?.identityCardAddress ||
-                  !!errors.address?.identityCardAddress ||
-                  !values.address?.currentAddress ||
-                  !!errors.address?.currentAddress ||
-                  !values.address?.city ||
-                  !!errors.address?.city ||
-                  !values.address?.province ||
-                  !!errors.address?.province ||
-                  !values.address?.country ||
-                  !!errors.address?.country ||
-                  !values.address?.zipCode ||
-                  !!errors.address?.zipCode ||
-                  !values.balance?.initial ||
-                  !!errors.balance?.initial ||
-                  !values.balance?.end ||
-                  !!errors.balance?.end
-                }
-                onPress={handleSubmit}>
+              <Button type="primary" onPress={handleSubmit}>
                 Simpan
               </Button>
             </View>
@@ -749,29 +1048,6 @@ export default () => {
 };
 
 const styles = StyleSheet.create({
-  // avatarContainer: {
-  //   width: 100,
-  //   height: 100,
-  // },
-  // avatar: {
-  //   width: '100%',
-  //   height: '100%',
-  //   borderRadius: 100,
-  // },
-  // cameraIconContainer: {
-  //   position: 'absolute',
-  //   bottom: 0,
-  //   right: 0,
-  //   width: 24,
-  //   height: 24,
-  //   borderRadius: 24,
-  //   justifyContent: 'center',
-  //   backgroundColor: '#1B72C0',
-  // },
-  // cameraIcon: {
-  //   alignSelf: 'center',
-  //   bottom: 1,
-  // },
   container: {
     flex: 1,
   },
