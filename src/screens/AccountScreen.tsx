@@ -50,7 +50,7 @@ export default () => {
         onClose={() => {
           setShowConfirmLogoutDropdown(false);
         }}
-        title="Konfirmasi Logout"
+        title="Konfirmasi"
         content={
           <>
             <Spacer height={8} />

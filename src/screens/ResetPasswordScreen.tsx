@@ -82,7 +82,7 @@ export default () => {
                 email: '',
               });
             }}
-            title="Konfirmasi Reset Password"
+            title="Konfirmasi"
             content={
               <>
                 <Spacer height={8} />

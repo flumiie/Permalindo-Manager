@@ -31,7 +31,7 @@ const ReportListItem = (props: { item: any; onPress: () => void }) => {
       sub={{
         subtitle: props.item.email,
         desc: props.item.memberCode,
-        balance: 0,
+        extra: 0,
       }}
       onPress={props.onPress}
     />

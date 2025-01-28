@@ -148,7 +148,7 @@ export default () => {
               onClose={() => {
                 setShowConfirmCreateDataDropdown(false);
               }}
-              title="Konfirmasi tambah data iuran"
+              title="Konfirmasi"
               content={
                 <>
                   <Spacer height={8} />
