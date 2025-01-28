@@ -57,3 +57,12 @@ export type MemberInterestsType = {
   date: string;
   amount: string;
 };
+
+export type FundsDataType = {
+  id: string;
+  date: string;
+  itemName: string;
+  fundType: string;
+  itemPrice: string;
+  itemUnit: number;
+};

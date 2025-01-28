@@ -2,25 +2,28 @@ import firestore from '@react-native-firebase/firestore';
 
 import { GET_FUNDS, GET_FUNDS_ERROR } from '../constants';
 
-interface GetUserDataProps {
+interface GetFundsDataProps {
   onSuccess: (v: any) => void;
   onError: (v: string) => void;
 }
 
-export default (props: GetUserDataProps) => {
+export default (props: GetFundsDataProps) => {
   return async (dispatch: any) =>
     await firestore()
       .collection('Funds')
+      .limit(10)
       .get()
       .then(querySnap => {
-        const data = querySnap.docs[0].data();
-
-        dispatch({
-          type: GET_FUNDS,
-          payload: data,
-        });
-
-        props.onSuccess(data);
+        if (querySnap.docs.length) {
+          const data = querySnap.docs.map(doc => doc.data());
+          dispatch({
+            type: GET_FUNDS,
+            payload: data,
+          });
+          props.onSuccess(data);
+        } else {
+          props.onSuccess([]);
+        }
       })
       .catch(err => {
         dispatch({
