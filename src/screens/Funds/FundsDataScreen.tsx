@@ -2,7 +2,7 @@ import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList } from 'react-native';
+import { FlatList, StatusBar } from 'react-native';
 import { RefreshControl } from 'react-native';
 import { useMMKVStorage } from 'react-native-mmkv-storage';
 
@@ -163,6 +163,7 @@ export default () => {
 
   return (
     <>
+      <StatusBar barStyle="dark-content" backgroundColor="#FCFCFF" />
       <DropdownNavigator
         open={!!showDropdown.open}
         title={showDropdown.itemName ?? ''}

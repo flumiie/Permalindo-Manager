@@ -3,14 +3,12 @@ import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { StatusBar, StatusBarStyle, StyleSheet } from 'react-native';
 import RNBootSplash from 'react-native-bootsplash';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useMMKVStorage } from 'react-native-mmkv-storage';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
 
 import store, { asyncStorage } from '../store';
 import Routes from './Routes';
-import { Snackbar } from './components';
 
 const Theme = {
   ...DefaultTheme,
@@ -96,9 +94,7 @@ function App(): React.JSX.Element {
       />
       <NavigationContainer theme={Theme}>
         <Provider store={store}>
-          <GestureHandlerRootView style={styles.flex}>
-            <Routes />
-          </GestureHandlerRootView>
+          <Routes />
         </Provider>
       </NavigationContainer>
     </SafeAreaProvider>
