@@ -91,7 +91,7 @@ android {
         applicationId "com.permalindomanager"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 15
+        versionCode 16
         versionName userVer
     }
     // flavorDimensions "version"
@@ -124,10 +124,10 @@ android {
     }
     splits {
         abi {
-            enable gradle.startParameter.taskNames.any { it.contains("Release") }
+            enable gradle.startParameter.taskNames.any { it.contains("release") }
             reset()
-            include /** 'armeabi-v7a', */ 'arm64-v8a', 'x86', 'x86_64'
-            universalApk false
+            include 'arm64-v8a', 'x86', 'x86_64'
+            universalApk true
         }
     }
     buildTypes {
