@@ -52,8 +52,8 @@ export default () => {
     asyncStorage,
   );
   const itemNameInputRef = useRef<RNTextInput>(null);
-  const itemUnitInputRef = useRef<RNTextInput>(null);
-  const itemPriceInputRef = useRef<RNTextInput>(null);
+  const memberCodeInputRef = useRef<RNTextInput>(null);
+  const itemFundAmountInputRef = useRef<RNTextInput>(null);
 
   const [showConfirmCreateDataDropdown, setShowConfirmCreateDataDropdown] =
     useState(false);
@@ -61,8 +61,8 @@ export default () => {
   const ValidationSchema = Yup.object().shape({
     itemName: Yup.string().required('Harus diisi'),
     fundType: Yup.string().required('Harus diisi'),
-    itemUnit: Yup.string().required('Harus diisi'),
-    itemPrice: Yup.string().required('Harus diisi'),
+    memberCode: Yup.string().required('Harus diisi'),
+    itemFundAmount: Yup.string().required('Harus diisi'),
   });
 
   useEffect(() => {
@@ -86,10 +86,10 @@ export default () => {
           id: route.params?.id,
           itemName: route.params?.itemName,
           fundType: route.params?.fundType,
-          itemUnit: route.params?.itemUnit,
-          itemPrice: route.params?.itemPrice
+          memberCode: route.params?.memberCode,
+          itemFundAmount: route.params?.itemFundAmount
             ? Number(
-                route.params?.itemPrice.replace(/[.|,| |-]/g, ''),
+                route.params?.itemFundAmount.replace(/[.|,| |-]/g, ''),
               ).toLocaleString()
             : null,
         }}
@@ -202,6 +202,25 @@ export default () => {
                   <Spacer height={24} />
 
                   <TextInput
+                    ref={memberCodeInputRef}
+                    id="member-code"
+                    label="Kode Anggota*"
+                    filledTextColor
+                    onChangeText={handleChange('memberCode')}
+                    onBlur={handleBlur('memberCode')}
+                    onSubmitEditing={() => {
+                      if (!values.itemName) {
+                        itemNameInputRef.current?.focus();
+                      } else if (!values.itemFundAmount) {
+                        itemFundAmountInputRef.current?.focus();
+                      }
+                    }}
+                    value={values.memberCode ?? ''}
+                    error={touched.memberCode && errors.memberCode}
+                  />
+                  <Spacer height={16} />
+
+                  <TextInput
                     ref={itemNameInputRef}
                     id="item-name"
                     label="Nama Item*"
@@ -209,16 +228,44 @@ export default () => {
                     onChangeText={handleChange('itemName')}
                     onBlur={handleBlur('itemName')}
                     onSubmitEditing={() => {
-                      if (!values.itemUnit) {
-                        itemUnitInputRef.current?.focus();
-                      } else if (!values.itemPrice) {
-                        itemPriceInputRef.current?.focus();
+                      if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      } else if (!values.itemFundAmount) {
+                        itemFundAmountInputRef.current?.focus();
                       }
                     }}
                     value={values.itemName}
                     error={touched.itemName && errors.itemName}
                   />
                   <Spacer height={16} />
+
+                  <TextInput
+                    ref={itemFundAmountInputRef}
+                    id="item-fund-amount"
+                    label="Harga*"
+                    filledTextColor
+                    keyboardType="decimal-pad"
+                    leftLabel="Rp"
+                    onChangeText={handleChange('itemFundAmount')}
+                    onBlur={() => {
+                      handleBlur('itemFundAmount');
+                      itemFundAmountInputRef.current?.setNativeProps({
+                        text: Number(
+                          values.itemFundAmount?.replace(/[.|,| |-]/g, ''),
+                        ).toLocaleString(),
+                      });
+                    }}
+                    value={values.itemFundAmount ?? ''}
+                    error={touched.itemFundAmount && errors.itemFundAmount}
+                    onSubmitEditing={() => {
+                      if (!values.itemName) {
+                        itemNameInputRef.current?.focus();
+                      } else if (!values.memberCode) {
+                        memberCodeInputRef.current?.focus();
+                      }
+                    }}
+                  />
+                  <Spacer height={24} />
 
                   <View style={styles.row}>
                     <RadioButton
@@ -243,54 +290,6 @@ export default () => {
                       </RegularText>
                     </>
                   ) : null}
-                  <Spacer height={16} />
-
-                  <TextInput
-                    ref={itemUnitInputRef}
-                    id="item-unit"
-                    label="Unit*"
-                    filledTextColor
-                    keyboardType="decimal-pad"
-                    onChangeText={handleChange('itemUnit')}
-                    onBlur={handleBlur('itemUnit')}
-                    onSubmitEditing={() => {
-                      if (!values.itemName) {
-                        itemNameInputRef.current?.focus();
-                      } else if (!values.itemPrice) {
-                        itemPriceInputRef.current?.focus();
-                      }
-                    }}
-                    value={values.itemUnit ?? ''}
-                    error={touched.itemUnit && errors.itemUnit}
-                  />
-                  <Spacer height={16} />
-
-                  <TextInput
-                    ref={itemPriceInputRef}
-                    id="item-price"
-                    label="Harga*"
-                    filledTextColor
-                    keyboardType="decimal-pad"
-                    leftLabel="Rp"
-                    onChangeText={handleChange('itemPrice')}
-                    onBlur={() => {
-                      handleBlur('itemPrice');
-                      itemPriceInputRef.current?.setNativeProps({
-                        text: Number(
-                          values.itemPrice?.replace(/[.|,| |-]/g, ''),
-                        ).toLocaleString(),
-                      });
-                    }}
-                    value={values.itemPrice ?? ''}
-                    error={touched.itemPrice && errors.itemPrice}
-                    onSubmitEditing={() => {
-                      if (!values.itemName) {
-                        itemNameInputRef.current?.focus();
-                      } else if (!values.itemUnit) {
-                        itemUnitInputRef.current?.focus();
-                      }
-                    }}
-                  />
                 </DismissableView>
               </SafeAreaView>
             </ScrollView>

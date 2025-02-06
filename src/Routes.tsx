@@ -42,8 +42,8 @@ export type RootStackParamList = {
     date: string;
     itemName: string;
     fundType: string;
-    itemUnit: number;
-    itemPrice: string;
+    memberCode: string;
+    itemFundAmount: string;
   };
   NewMasterData: undefined;
   EditMasterData: {

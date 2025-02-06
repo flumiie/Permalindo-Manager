@@ -2,7 +2,7 @@ import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList, StatusBar } from 'react-native';
+import { FlatList, StatusBar, View } from 'react-native';
 import { RefreshControl } from 'react-native';
 import { useMMKVStorage } from 'react-native-mmkv-storage';
 
@@ -16,12 +16,23 @@ import {
   Empty,
   FloatingActionButton,
   ItemList,
+  MediumText,
   NavigationHeader,
   NavigationHeaderProps,
   RegularText,
   Spacer,
 } from '../../components';
 import { FundsDataType } from '../../libs/dataTypes';
+import { decimalize } from '../../libs/functions';
+
+const Header = (props: { amount: number }) => {
+  return (
+    <View
+      style={{ display: 'flex', paddingVertical: 12, paddingHorizontal: 16 }}>
+      <MediumText>Total: Rp. {decimalize(props.amount)}</MediumText>
+    </View>
+  );
+};
 
 const FundsItemList = (props: { item: any; onPress: () => void }) => {
   return (
@@ -31,9 +42,9 @@ const FundsItemList = (props: { item: any; onPress: () => void }) => {
       title={props.item.itemName}
       sub={{
         subtitle: `Rp ${Number(
-          props.item.itemPrice.replace(/[.|,| |-]/g, ''),
+          props.item.itemFundAmount.replace(/[.|,| |-]/g, ''),
         ).toLocaleString()}`,
-        desc: `${props.item.fundType}: ${props.item.itemUnit} Unit`,
+        desc: `${props.item.fundType}: ${props.item.memberCode}`,
       }}
       onPress={props.onPress}
     />
@@ -68,16 +79,16 @@ export default () => {
     date: string | null;
     itemName: string | null;
     fundType: string | null;
-    itemUnit: number | null;
-    itemPrice: string | null;
+    memberCode: string | null;
+    itemFundAmount: string | null;
   }>({
     open: null,
     id: null,
     date: null,
     itemName: null,
     fundType: null,
-    itemUnit: null,
-    itemPrice: null,
+    memberCode: null,
+    itemFundAmount: null,
   });
   const [showDeleteDropdown, setShowDeleteDropdown] = useState(false);
 
@@ -93,8 +104,8 @@ export default () => {
         S =>
           S.itemName.toLowerCase().includes(processedSearch) ||
           S.fundType.toLowerCase().includes(processedSearch) ||
-          S.itemUnit.toString().includes(processedSearch) ||
-          S.itemPrice.toLowerCase().includes(processedSearch),
+          S.memberCode.toString().includes(processedSearch) ||
+          S.itemFundAmount.toLowerCase().includes(processedSearch),
       );
     }
 
@@ -130,8 +141,8 @@ export default () => {
         date: data.date ?? '',
         itemName: data.itemName ?? '',
         fundType: data.fundType ?? '',
-        itemUnit: data.itemUnit ?? 0,
-        itemPrice: data.itemPrice ?? '',
+        memberCode: data.memberCode ?? '',
+        itemFundAmount: data.itemFundAmount ?? '',
       });
     }
     if (v === 'Hapus') {
@@ -227,6 +238,21 @@ export default () => {
             <Empty />
           </>
         }
+        ListHeaderComponent={
+          filteredData.length
+            ? () => {
+                let amount = 0;
+                filteredData.forEach(S => {
+                  if (S.fundType === 'Pemasukkan') {
+                    amount += Number(S.itemFundAmount);
+                  } else if (S.fundType === 'Pengeluaran') {
+                    amount -= Number(S.itemFundAmount);
+                  }
+                });
+                return <Header amount={amount} />;
+              }
+            : null
+        }
         renderItem={({ item }) => (
           <FundsItemList
             item={item}
@@ -238,8 +264,8 @@ export default () => {
                 date: item.date ?? '',
                 itemName: item.itemName,
                 fundType: item.fundType,
-                itemUnit: item.itemUnit,
-                itemPrice: item.itemPrice,
+                memberCode: item.memberCode,
+                itemFundAmount: item.itemFundAmount,
               });
             }}
           />

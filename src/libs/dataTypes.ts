@@ -63,6 +63,6 @@ export type FundsDataType = {
   date: string;
   itemName: string;
   fundType: string;
-  itemPrice: string;
-  itemUnit: number;
+  itemFundAmount: string;
+  memberCode: string;
 };
