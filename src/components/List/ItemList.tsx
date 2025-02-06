@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, PressableProps, StyleSheet, View } from 'react-native';
 import FastImage, { Source } from 'react-native-fast-image';
 import Icon from 'react-native-vector-icons/Feather';
@@ -25,6 +25,15 @@ interface ItemListProps extends PressableProps {
 }
 
 export default (props: ItemListProps) => {
+  const descColor = useMemo(() => {
+    if (props.sub?.desc.includes('Pemasukkan')) {
+      return '#008c3b';
+    } else if (props.sub?.desc.includes('Pengeluaran')) {
+      return '#FF0000';
+    }
+    return '#4B4B4B';
+  }, [props.sub]);
+
   return (
     <View style={styles.container}>
       <Pressable
@@ -71,11 +80,11 @@ export default (props: ItemListProps) => {
                   <RegularText size={12} color="#4B4B4B">
                     {(props.sub as SubtitleType).subtitle}
                   </RegularText>
-                  <RegularText size={12} color="#4B4B4B">
+                  <RegularText size={12} color={descColor}>
                     {(props.sub as SubtitleType).desc}
                   </RegularText>
                   {/* <RegularText size={12} color="#4B4B4B">
-                    Belum dibayar: Rp {(props.sub as SubtitleType).balance}
+                    Belum dibayar: Rp{(props.sub as SubtitleType).balance}
                   </RegularText> */}
                 </>
               ) : null}

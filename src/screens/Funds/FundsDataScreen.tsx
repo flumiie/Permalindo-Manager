@@ -29,7 +29,12 @@ const Header = (props: { amount: number }) => {
   return (
     <View
       style={{ display: 'flex', paddingVertical: 12, paddingHorizontal: 16 }}>
-      <MediumText>Total: Rp. {decimalize(props.amount)}</MediumText>
+      <MediumText>
+        Total:{' '}
+        {decimalize(props.amount).includes('-')
+          ? `-Rp${decimalize(props.amount).slice(1)}`
+          : `Rp${decimalize(props.amount)}`}
+      </MediumText>
     </View>
   );
 };
@@ -41,7 +46,7 @@ const FundsItemList = (props: { item: any; onPress: () => void }) => {
       date={props.item.date}
       title={props.item.itemName}
       sub={{
-        subtitle: `Rp ${Number(
+        subtitle: `Rp${Number(
           props.item.itemFundAmount.replace(/[.|,| |-]/g, ''),
         ).toLocaleString()}`,
         desc: `${props.item.fundType}: ${props.item.memberCode}`,
@@ -244,9 +249,9 @@ export default () => {
                 let amount = 0;
                 filteredData.forEach(S => {
                   if (S.fundType === 'Pemasukkan') {
-                    amount += Number(S.itemFundAmount);
-                  } else if (S.fundType === 'Pengeluaran') {
                     amount -= Number(S.itemFundAmount);
+                  } else if (S.fundType === 'Pengeluaran') {
+                    amount += Number(S.itemFundAmount);
                   }
                 });
                 return <Header amount={amount} />;

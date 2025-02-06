@@ -38,21 +38,21 @@ const ReportListItem = (props: {
 }) => {
   const title = useMemo(() => {
     if (props.item.paid < props.item.due) {
-      return `Kurang: Rp ${
+      return `Kurang: Rp${
         Number(
           props.item.due?.replace(/[.|,| |-]/g, '') ?? 0,
         ).toLocaleString() ?? 0
-      }\nDibayar: Rp ${
+      }\nDibayar: Rp${
         Number(
           props.item.paid?.replace(/[.|,| |-]/g, '') ?? 0,
         ).toLocaleString() ?? 0
-      }\nSisa: Rp ${
+      }\nSisa: Rp${
         Number(
           props.item.remaining?.replace(/[.|,| |-]/g, '') ?? 0,
         ).toLocaleString() ?? 0
       }`;
     }
-    return `Total: Rp ${Number(
+    return `Total: Rp${Number(
       props.item.due?.replace(/[.|,| |-]/g, '') ?? 0,
     ).toLocaleString()} (Sudah lunas)`;
   }, [props.item]);
