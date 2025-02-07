@@ -251,9 +251,9 @@ export default () => {
                 let amount = 0;
                 filteredData?.forEach(S => {
                   if (S?.fundType === 'Pemasukkan') {
-                    amount -= Number(S?.itemFundAmount ?? '0');
-                  } else if (S?.fundType === 'Pengeluaran') {
                     amount += Number(S?.itemFundAmount ?? '0');
+                  } else if (S?.fundType === 'Pengeluaran') {
+                    amount -= Number(S?.itemFundAmount ?? '0');
                   }
                 });
                 return <Header amount={amount} />;
