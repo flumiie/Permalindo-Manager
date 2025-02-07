@@ -44,12 +44,14 @@ const FundsItemList = (props: { item: any; onPress: () => void }) => {
     <ItemList
       id={props.item.id}
       date={props.item.date}
-      title={props.item.itemName}
+      title={props.item.itemName ?? ''}
       sub={{
-        subtitle: `Rp${Number(
-          props.item.itemFundAmount.replace(/[.|,| |-]/g, ''),
+        subtitle: `${
+          props.item?.fundType === 'Pengeluaran' ? '-' : ''
+        }Rp${Number(
+          props.item?.itemFundAmount?.replace?.(/[.|,| |-]/g, ''),
         ).toLocaleString()}`,
-        desc: `${props.item.fundType}: ${props.item.memberCode}`,
+        desc: `${props.item?.fundType}: ${props.item?.memberCode}`,
       }}
       onPress={props.onPress}
     />
@@ -102,15 +104,15 @@ export default () => {
 
     if (search) {
       let processedSearch = search
-        .replace(/^;$/g, '; ')
-        .replace(/; /g, '†')
-        .toLowerCase();
-      tempData = tempData.filter(
+        ?.replace?.(/^;$/g, '; ')
+        ?.replace?.(/; /g, '†')
+        ?.toLowerCase();
+      tempData = tempData?.filter(
         S =>
-          S.itemName.toLowerCase().includes(processedSearch) ||
-          S.fundType.toLowerCase().includes(processedSearch) ||
-          S.memberCode.toString().includes(processedSearch) ||
-          S.itemFundAmount.toLowerCase().includes(processedSearch),
+          S.itemName?.toLowerCase().includes(processedSearch) ||
+          S.fundType?.toLowerCase().includes(processedSearch) ||
+          S.memberCode?.toLowerCase().includes(processedSearch) ||
+          S.itemFundAmount?.toLowerCase().includes(processedSearch),
       );
     }
 
@@ -244,14 +246,14 @@ export default () => {
           </>
         }
         ListHeaderComponent={
-          filteredData.length
+          filteredData?.length
             ? () => {
                 let amount = 0;
-                filteredData.forEach(S => {
-                  if (S.fundType === 'Pemasukkan') {
-                    amount -= Number(S.itemFundAmount);
-                  } else if (S.fundType === 'Pengeluaran') {
-                    amount += Number(S.itemFundAmount);
+                filteredData?.forEach(S => {
+                  if (S?.fundType === 'Pemasukkan') {
+                    amount -= Number(S?.itemFundAmount ?? '0');
+                  } else if (S?.fundType === 'Pengeluaran') {
+                    amount += Number(S?.itemFundAmount ?? '0');
                   }
                 });
                 return <Header amount={amount} />;
@@ -267,10 +269,10 @@ export default () => {
                 open: true,
                 id: item.id ?? '',
                 date: item.date ?? '',
-                itemName: item.itemName,
-                fundType: item.fundType,
-                memberCode: item.memberCode,
-                itemFundAmount: item.itemFundAmount,
+                itemName: item.itemName ?? '',
+                fundType: item.fundType ?? '',
+                memberCode: item.memberCode ?? '',
+                itemFundAmount: item.itemFundAmount ?? '',
               });
             }}
           />
@@ -278,9 +280,7 @@ export default () => {
       />
       <FloatingActionButton
         icon="plus"
-        onPress={() => {
-          navigation.navigate('NewFundData');
-        }}
+        onPress={() => navigation.navigate('NewFundData')}
       />
     </>
   );
