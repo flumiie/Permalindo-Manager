@@ -17,7 +17,7 @@ interface SnackbarProps {
 
 export default ({
   duration = 3000,
-  position = 'top',
+  position = 'bottom',
   actionTextColor = 'white',
   ...props
 }: SnackbarProps) => {
@@ -37,8 +37,8 @@ export default ({
       // eslint-disable-next-line react-native/no-inline-styles
       style={{
         ...styles.container,
-        top: position === 'top' ? 24 : undefined,
-        bottom: position === 'bottom' ? 24 : undefined,
+        top: position === 'top' ? 84 : undefined,
+        bottom: position === 'bottom' ? 84 : undefined,
         backgroundColor: props.type === 'success' ? '#5FBC4F' : '#C42A1C',
       }}>
       <RegularText type="body-medium" style={styles.messageText}>

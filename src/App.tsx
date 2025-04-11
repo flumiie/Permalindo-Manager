@@ -9,6 +9,7 @@ import { Provider } from 'react-redux';
 
 import store, { asyncStorage } from '../store';
 import Routes from './Routes';
+import { Snackbar } from './components';
 
 const Theme = {
   ...DefaultTheme,
@@ -91,6 +92,12 @@ function App(): React.JSX.Element {
       <StatusBar
         backgroundColor={statusBar.backgroundColor}
         barStyle={statusBar.barStyle}
+      />
+      <Snackbar
+        onHide={() => setSnackbar(null)}
+        visible={snackbar?.show ?? false}
+        type={snackbar?.type ?? 'success'}
+        message={snackbar?.message ?? ''}
       />
       <NavigationContainer theme={Theme}>
         <Provider store={store}>
