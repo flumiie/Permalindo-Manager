@@ -192,8 +192,9 @@ export default () => {
                 <>
                   <Spacer height={8} />
                   <RegularText type="body-medium">
-                    Yakin data sudah benar? Data akan ditambahkan setelah
-                    menekan OK
+                    Yakin data sudah benar? Data akan{' '}
+                    {route.params?.memberCode ? 'diubah' : 'ditambahkan'}{' '}
+                    setelah menekan OK
                   </RegularText>
                 </>
               }
@@ -214,18 +215,45 @@ export default () => {
                       state: false,
                       values: {},
                     });
-                    firestore()
-                      .collection('Personels')
-                      .add(values)
-                      .then(() => {
-                        setRefreshList(true);
-                        navigation.goBack();
-                        setSnackbar({
-                          show: true,
-                          type: 'success',
-                          message: 'Data sudah tersimpan',
-                        });
-                      });
+                    route.params?.memberCode
+                      ? firestore()
+                          .collection('Personels')
+                          .orderBy('memberCode')
+                          .get()
+                          .then(snap => {
+                            snap.forEach(doc => {
+                              if (
+                                (doc as any)?._data?.memberCode ===
+                                route.params?.memberCode
+                              ) {
+                                firestore()
+                                  .collection('Personels')
+                                  .doc(doc.id ?? '')
+                                  .update(values)
+                                  .then(() => {
+                                    setRefreshList(true);
+                                    setSnackbar({
+                                      show: true,
+                                      type: 'success',
+                                      message: 'Data sudah tersimpan',
+                                    });
+                                    navigation.goBack();
+                                  });
+                              }
+                            });
+                          })
+                      : firestore()
+                          .collection('Personels')
+                          .add(values)
+                          .then(() => {
+                            setRefreshList(true);
+                            setSnackbar({
+                              show: true,
+                              type: 'success',
+                              message: 'Data sudah tersimpan',
+                            });
+                            navigation.goBack();
+                          });
                   },
                 },
               }}
