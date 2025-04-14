@@ -97,7 +97,10 @@ export default () => {
     memberCode: null,
     itemFundAmount: null,
   });
-  const [showDeleteDropdown, setShowDeleteDropdown] = useState(false);
+  const [showDeleteDropdown, setShowDeleteDropdown] = useState({
+    id: '',
+    show: false,
+  });
 
   const filteredData = useMemo(() => {
     let tempData: FundsDataType[] = funds;
@@ -153,7 +156,7 @@ export default () => {
       });
     }
     if (v === 'Hapus') {
-      return setShowDeleteDropdown(true);
+      return setShowDeleteDropdown({ id: data.id ?? '', show: true });
     }
 
     return null;
@@ -198,7 +201,7 @@ export default () => {
         }}
       />
       <DropdownConfirm
-        open={showDeleteDropdown}
+        open={showDeleteDropdown.show}
         title="Hapus Data Kas"
         content={
           <RegularText>
@@ -209,7 +212,7 @@ export default () => {
           left: {
             label: 'Batal',
             onPress: () => {
-              setShowDeleteDropdown(false);
+              setShowDeleteDropdown({ id: '', show: false });
               setShowDropdown({ ...showDropdown, open: true });
             },
           },
@@ -218,18 +221,23 @@ export default () => {
             onPress: () => {
               firestore()
                 .collection('Funds')
-                .where('memberName', '==', showDropdown.memberName ?? '')
+                .where('id', '==', showDropdown.id ?? '')
                 .get()
                 .then(querySnap => {
-                  querySnap.forEach(doc => doc.ref.delete());
-                  setRefreshList(true);
+                  if (querySnap.docs.length) {
+                    firestore()
+                      .collection('Funds')
+                      .doc(querySnap.docs[0].id)
+                      .delete();
+                    setRefreshList(true);
+                  }
                 });
-              setShowDeleteDropdown(false);
+              setShowDeleteDropdown({ id: '', show: false });
             },
           },
         }}
         onClose={() => {
-          setShowDeleteDropdown(false);
+          setShowDeleteDropdown({ id: '', show: false });
           setShowDropdown({ ...showDropdown, open: true });
         }}
       />

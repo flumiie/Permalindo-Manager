@@ -96,7 +96,7 @@ export default forwardRef(
           <RNTextInput
             {...props}
             ref={ref}
-            editable={!props.disabled || props.editable}
+            editable={!props.disabled && props.editable}
             placeholder={`${props.leftIcon ? '         ' : ''}${
               props.placeholder ?? ''
             }`}
