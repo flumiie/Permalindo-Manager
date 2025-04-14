@@ -183,7 +183,7 @@ export default () => {
                         .add({
                           ...values,
                           date: new Date().toString(),
-                          id: (funds?.length ?? 0) + 1,
+                          id: Math.floor(Math.random() * Date.now()),
                         })
                         .then(() => {
                           setRefreshList(true);
