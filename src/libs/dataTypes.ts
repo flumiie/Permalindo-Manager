@@ -61,7 +61,7 @@ export type MemberInterestsType = {
 export type FundsDataType = {
   id: string;
   date: string;
-  itemName: string;
+  memberName: string;
   fundType: string;
   itemFundAmount: string;
   memberCode: string;

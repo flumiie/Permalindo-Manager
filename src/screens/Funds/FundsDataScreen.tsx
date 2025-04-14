@@ -44,7 +44,7 @@ const FundsItemList = (props: { item: any; onPress: () => void }) => {
     <ItemList
       id={props.item.id}
       date={props.item.date}
-      title={props.item.itemName ?? ''}
+      title={props.item.memberName ?? ''}
       sub={{
         subtitle: `${
           props.item?.fundType === 'Pengeluaran' ? '-' : ''
@@ -84,7 +84,7 @@ export default () => {
     open: boolean | null;
     id: string | null;
     date: string | null;
-    itemName: string | null;
+    memberName: string | null;
     fundType: string | null;
     memberCode: string | null;
     itemFundAmount: string | null;
@@ -92,7 +92,7 @@ export default () => {
     open: null,
     id: null,
     date: null,
-    itemName: null,
+    memberName: null,
     fundType: null,
     memberCode: null,
     itemFundAmount: null,
@@ -109,7 +109,7 @@ export default () => {
         ?.toLowerCase();
       tempData = tempData?.filter(
         S =>
-          S.itemName?.toLowerCase().includes(processedSearch) ||
+          S.memberName?.toLowerCase().includes(processedSearch) ||
           S.fundType?.toLowerCase().includes(processedSearch) ||
           S.memberCode?.toLowerCase().includes(processedSearch) ||
           S.itemFundAmount?.toLowerCase().includes(processedSearch),
@@ -146,7 +146,7 @@ export default () => {
       return navigation.navigate('EditFundData', {
         id: data.id ?? '',
         date: data.date ?? '',
-        itemName: data.itemName ?? '',
+        memberName: data.memberName ?? '',
         fundType: data.fundType ?? '',
         memberCode: data.memberCode ?? '',
         itemFundAmount: data.itemFundAmount ?? '',
@@ -184,7 +184,7 @@ export default () => {
       <StatusBar barStyle="dark-content" backgroundColor="#FCFCFF" />
       <DropdownNavigator
         open={!!showDropdown.open}
-        title={showDropdown.itemName ?? ''}
+        title={showDropdown.memberName ?? ''}
         options={[
           { type: 'primary', label: 'Edit Data Kas' },
           { type: 'secondary', label: 'Hapus' },
@@ -202,7 +202,7 @@ export default () => {
         title="Hapus Data Kas"
         content={
           <RegularText>
-            Yakin hapus {showDropdown.itemName} dari kas?
+            Yakin hapus {showDropdown.memberName} dari kas?
           </RegularText>
         }
         actions={{
@@ -218,7 +218,7 @@ export default () => {
             onPress: () => {
               firestore()
                 .collection('Funds')
-                .where('itemName', '==', showDropdown.itemName ?? '')
+                .where('memberName', '==', showDropdown.memberName ?? '')
                 .get()
                 .then(querySnap => {
                   querySnap.forEach(doc => doc.ref.delete());
@@ -238,7 +238,7 @@ export default () => {
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={fetchData} />
         }
-        keyExtractor={item => item.itemName}
+        keyExtractor={item => item.id}
         ListEmptyComponent={
           <>
             <Spacer height={24} />
@@ -269,7 +269,7 @@ export default () => {
                 open: true,
                 id: item.id ?? '',
                 date: item.date ?? '',
-                itemName: item.itemName ?? '',
+                memberName: item.memberName ?? '',
                 fundType: item.fundType ?? '',
                 memberCode: item.memberCode ?? '',
                 itemFundAmount: item.itemFundAmount ?? '',

@@ -40,7 +40,7 @@ export type RootStackParamList = {
   EditFundData: {
     id: string;
     date: string;
-    itemName: string;
+    memberName: string;
     fundType: string;
     memberCode: string;
     itemFundAmount: string;

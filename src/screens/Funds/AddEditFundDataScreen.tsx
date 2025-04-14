@@ -4,6 +4,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { Formik } from 'formik';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Keyboard,
   TextInput as RNTextInput,
   SafeAreaView,
   ScrollView,
@@ -11,6 +12,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown';
 import { useMMKVStorage } from 'react-native-mmkv-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Yup from 'yup';
@@ -29,7 +31,7 @@ import {
   Spacer,
   TextInput,
 } from '../../components';
-import { FundsDataType } from '../../libs/dataTypes';
+import { FundsDataType, MasterDataType } from '../../libs/dataTypes';
 
 export default () => {
   const insets = useSafeAreaInsets();
@@ -51,18 +53,30 @@ export default () => {
     'funds',
     asyncStorage,
   );
-  const itemNameInputRef = useRef<RNTextInput>(null);
+  const [personels] = useMMKVStorage<MasterDataType[]>(
+    'personels',
+    asyncStorage,
+    [],
+  );
   const memberCodeInputRef = useRef<RNTextInput>(null);
+  const memberNameInputRef = useRef<RNTextInput>(null);
   const itemFundAmountInputRef = useRef<RNTextInput>(null);
 
   const [showConfirmCreateDataDropdown, setShowConfirmCreateDataDropdown] =
     useState(false);
 
   const ValidationSchema = Yup.object().shape({
-    itemName: Yup.string().required('Harus diisi'),
-    fundType: Yup.string().required('Harus diisi'),
     memberCode: Yup.string().required('Harus diisi'),
+    memberName: Yup.string().required('Harus diisi'),
+    fundType: Yup.string().required('Harus diisi'),
     itemFundAmount: Yup.string().required('Harus diisi'),
+  });
+
+  const dataSet = personels.map(S => {
+    return {
+      id: S.fullName,
+      title: S.memberCode,
+    };
   });
 
   useEffect(() => {
@@ -84,9 +98,9 @@ export default () => {
         initialValues={{
           date: route.params?.date,
           id: route.params?.id,
-          itemName: route.params?.itemName,
-          fundType: route.params?.fundType,
           memberCode: route.params?.memberCode,
+          memberName: route.params?.memberName,
+          fundType: route.params?.fundType,
           itemFundAmount: route.params?.itemFundAmount
             ? Number(
                 route.params?.itemFundAmount.replace(/[.|,| |-]/g, ''),
@@ -96,7 +110,10 @@ export default () => {
         validateOnBlur
         validateOnChange
         validationSchema={ValidationSchema}
-        onSubmit={() => setShowConfirmCreateDataDropdown(true)}>
+        onSubmit={() => {
+          Keyboard.dismiss();
+          setShowConfirmCreateDataDropdown(true);
+        }}>
         {({
           values,
           errors,
@@ -187,8 +204,8 @@ export default () => {
                 },
               }}
             />
-            <ScrollView style={styles.container}>
-              <SafeAreaView>
+            <SafeAreaView style={{ flex: 1 }}>
+              <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
                 <DismissableView style={styles.contentContainer}>
                   <BoldText type="title-medium">Isi data kas baru</BoldText>
                   <Spacer height={4} />
@@ -200,33 +217,48 @@ export default () => {
                     * Harus diisi
                   </RegularText>
                   <Spacer height={24} />
-
-                  <TextInput
-                    ref={memberCodeInputRef}
-                    id="member-code"
-                    label="Kode Anggota*"
-                    filledTextColor
-                    onChangeText={handleChange('memberCode')}
-                    onBlur={handleBlur('memberCode')}
-                    onSubmitEditing={() => {
-                      if (!values.itemName) {
-                        itemNameInputRef.current?.focus();
-                      } else if (!values.itemFundAmount) {
-                        itemFundAmountInputRef.current?.focus();
-                      }
+                  <AutocompleteDropdown
+                    closeOnBlur
+                    closeOnSubmit
+                    clearOnFocus={false}
+                    onSelectItem={item => {
+                      setFieldValue('memberName', item?.id ?? '');
                     }}
-                    value={values.memberCode ?? ''}
-                    error={touched.memberCode && errors.memberCode}
+                    debounce={600}
+                    dataSet={dataSet}
+                    containerStyle={{
+                      borderColor: '#E1E1E1',
+                      borderRadius: 2,
+                      borderWidth: 1,
+                      paddingVertical: 1,
+                    }}
+                    inputContainerStyle={{ backgroundColor: '#FFF' }}
+                    rightButtonsContainerStyle={{ backgroundColor: '#FFF' }}
+                    suggestionsListContainerStyle={{ backgroundColor: '#FFF' }}
+                    suggestionsListTextStyle={{
+                      color: '#222',
+                      backgroundColor: '#FFF',
+                    }}
+                    textInputProps={{
+                      placeholder: 'Contoh: A08001',
+                      autoCorrect: false,
+                      autoCapitalize: 'none',
+                      style: {
+                        color: '#222',
+                        borderRadius: 0,
+                        borderColor: '#FFF',
+                        backgroundColor: '#FFF',
+                      },
+                    }}
                   />
                   <Spacer height={16} />
-
                   <TextInput
-                    ref={itemNameInputRef}
-                    id="item-name"
-                    label="Nama Item*"
+                    ref={memberNameInputRef}
+                    id="member-name"
+                    label="Nama Anggota*"
                     filledTextColor
-                    onChangeText={handleChange('itemName')}
-                    onBlur={handleBlur('itemName')}
+                    onChangeText={handleChange('memberName')}
+                    onBlur={handleBlur('memberName')}
                     onSubmitEditing={() => {
                       if (!values.memberCode) {
                         memberCodeInputRef.current?.focus();
@@ -234,11 +266,10 @@ export default () => {
                         itemFundAmountInputRef.current?.focus();
                       }
                     }}
-                    value={values.itemName}
-                    error={touched.itemName && errors.itemName}
+                    value={values.memberName}
+                    error={touched.memberName && errors.memberName}
                   />
                   <Spacer height={16} />
-
                   <TextInput
                     ref={itemFundAmountInputRef}
                     id="item-fund-amount"
@@ -249,24 +280,23 @@ export default () => {
                     onChangeText={handleChange('itemFundAmount')}
                     onBlur={() => {
                       handleBlur('itemFundAmount');
-                      itemFundAmountInputRef.current?.setNativeProps({
-                        text: Number(
-                          values.itemFundAmount?.replace(/[.|,| |-]/g, ''),
-                        ).toLocaleString(),
-                      });
+                      if (values.itemFundAmount) {
+                        itemFundAmountInputRef.current?.setNativeProps({
+                          text: Number(
+                            values.itemFundAmount?.replace(/[.|,| |-]/g, ''),
+                          ).toLocaleString(),
+                        });
+                      }
                     }}
                     value={values.itemFundAmount ?? ''}
                     error={touched.itemFundAmount && errors.itemFundAmount}
                     onSubmitEditing={() => {
-                      if (!values.itemName) {
-                        itemNameInputRef.current?.focus();
-                      } else if (!values.memberCode) {
+                      if (!values.memberCode) {
                         memberCodeInputRef.current?.focus();
                       }
                     }}
                   />
                   <Spacer height={24} />
-
                   <View style={styles.row}>
                     <RadioButton
                       label="Pemasukkan"
@@ -291,8 +321,8 @@ export default () => {
                     </>
                   ) : null}
                 </DismissableView>
-              </SafeAreaView>
-            </ScrollView>
+              </ScrollView>
+            </SafeAreaView>
             <View
               style={{
                 ...styles.buttonContainer,
@@ -312,12 +342,14 @@ export default () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    flexGrow: 1,
   },
   row: {
     display: 'flex',
     flexDirection: 'row',
   },
   contentContainer: {
+    flex: 1,
     padding: 20,
   },
   buttonContainer: {

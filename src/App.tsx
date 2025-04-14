@@ -2,6 +2,7 @@ import { useNetInfo } from '@react-native-community/netinfo';
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { StatusBar, StatusBarStyle, StyleSheet } from 'react-native';
+import { AutocompleteDropdownContextProvider } from 'react-native-autocomplete-dropdown';
 import RNBootSplash from 'react-native-bootsplash';
 import { useMMKVStorage } from 'react-native-mmkv-storage';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -89,21 +90,23 @@ function App(): React.JSX.Element {
 
   return (
     <SafeAreaProvider>
-      <StatusBar
-        backgroundColor={statusBar.backgroundColor}
-        barStyle={statusBar.barStyle}
-      />
-      <Snackbar
-        onHide={() => setSnackbar(null)}
-        visible={snackbar?.show ?? false}
-        type={snackbar?.type ?? 'success'}
-        message={snackbar?.message ?? ''}
-      />
-      <NavigationContainer theme={Theme}>
-        <Provider store={store}>
-          <Routes />
-        </Provider>
-      </NavigationContainer>
+      <AutocompleteDropdownContextProvider>
+        <StatusBar
+          backgroundColor={statusBar.backgroundColor}
+          barStyle={statusBar.barStyle}
+        />
+        <Snackbar
+          onHide={() => setSnackbar(null)}
+          visible={snackbar?.show ?? false}
+          type={snackbar?.type ?? 'success'}
+          message={snackbar?.message ?? ''}
+        />
+        <NavigationContainer theme={Theme}>
+          <Provider store={store}>
+            <Routes />
+          </Provider>
+        </NavigationContainer>
+      </AutocompleteDropdownContextProvider>
     </SafeAreaProvider>
   );
 }
