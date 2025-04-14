@@ -74,29 +74,44 @@ export default ({ useSearch = false, ...props }: NavigationHeaderProps) => {
           onSubmit={values => {
             props.search?.(values.search);
           }}>
-          {({ values, handleChange, handleBlur, handleSubmit }) => (
-            <View style={navHeaderStyles.flex}>
-              <TextInput
-                ref={searchInputRef}
-                id="nav-search"
-                placeholder="Cari..."
-                onBlur={handleBlur('search')}
-                onChangeText={handleChange('search')}
-                onChange={() => handleSubmit()}
-                value={values.search}
-                inputStyle={styles.searchInput}
-              />
-            </View>
+          {({
+            values,
+            setFieldValue,
+            handleChange,
+            handleBlur,
+            handleSubmit,
+          }) => (
+            <>
+              <View style={navHeaderStyles.flex}>
+                <TextInput
+                  ref={searchInputRef}
+                  id="nav-search"
+                  placeholder="Cari..."
+                  onBlur={handleBlur('search')}
+                  onChangeText={handleChange('search')}
+                  onChange={() => handleSubmit()}
+                  value={values.search}
+                  inputStyle={styles.searchInput}
+                />
+              </View>
+              <Pressable
+                onPress={() => {
+                  if (values.search) {
+                    setFieldValue('search', '');
+                  } else {
+                    setSearchMode(false);
+                  }
+                }}>
+                <Icon
+                  name="x"
+                  size={24}
+                  color="#74777F"
+                  style={navHeaderStyles.backButtonIcon}
+                />
+              </Pressable>
+            </>
           )}
         </Formik>
-        <Pressable onPress={() => setSearchMode(true)}>
-          <Icon
-            name="x"
-            size={24}
-            color="#74777F"
-            style={navHeaderStyles.backButtonIcon}
-          />
-        </Pressable>
       </View>
     );
   }
